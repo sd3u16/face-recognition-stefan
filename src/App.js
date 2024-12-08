@@ -80,33 +80,37 @@ class App extends Component {
   }
 
   onButtonSubmit = () => {
-    this.setState({imageUrl: this.state.input});
-   
-    // HEADS UP! Sometimes the Clarifai Models can be down or not working as they are constantly getting updated.
-    // A good way to check if the model you are using is up, is to check them on the clarifai website. For example,
-    // for the Face Detect Mode: https://www.clarifai.com/models/face-detection
-    // If that isn't working, then that means you will have to wait until their servers are back up. 
+    this.setState({ imageUrl: this.state.input });
 
-    app.models.predict('face-detection', this.state.input)
-      .then(response => {
-        console.log('hi', response)
-        if (response) {
-          fetch('http://localhost:3000/image', {
-            method: 'put',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              id: this.state.user.id
-            })
+  fetch('http://localhost:3001/clarifai-workflow', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      imageUrl: this.state.input
+    })
+  })
+    .then(response => response.json())
+    .then(response => {
+      if (response) {
+        // Update entries count in the database
+        fetch('http://localhost:3001/image', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: this.state.user.id
           })
-            .then(response => response.json())
-            .then(count => {
-              this.setState(Object.assign(this.state.user, { entries: count}))
-            })
+        })
+          .then(response => response.json())
+          .then(count => {
+            this.setState(Object.assign(this.state.user, { entries: count }));
+          })
+          .catch(err => console.log('Error updating entries:', err));
 
-        }
-        this.displayFaceBox(this.calculateFaceLocation(response))
-      })
-      .catch(err => console.log(err));
+        // Display the bounding box for the face detected
+        this.displayFaceBox(this.calculateFaceLocation(response));
+      }
+    })
+    .catch(err => console.log('Error:', err));
   }
 
   onRouteChange = (route) => {
