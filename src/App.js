@@ -82,7 +82,7 @@ class App extends Component {
   onButtonSubmit = () => {
     this.setState({ imageUrl: this.state.input });
 
-  fetch('http://localhost:3001/clarifai-workflow', {
+  fetch('https://stef-recognition-brain-api.vercel.app/clarifai-workflow', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -93,7 +93,7 @@ class App extends Component {
     .then(response => {
       if (response) {
         // Update entries count in the database
-        fetch('http://localhost:3001/image', {
+        fetch('https://stef-recognition-brain-api.vercel.app/image', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
